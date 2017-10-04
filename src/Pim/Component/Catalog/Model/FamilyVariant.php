@@ -51,7 +51,7 @@ class FamilyVariant implements FamilyVariantInterface
     /**
      * {@inheritdoc}
      */
-    public function getCode(): string
+    public function getCode(): ?string
     {
         return $this->code;
     }
@@ -149,7 +149,7 @@ class FamilyVariant implements FamilyVariantInterface
     /**
      * {@inheritdoc}
      */
-    public function getFamily(): FamilyInterface
+    public function getFamily(): ?FamilyInterface
     {
         return $this->family;
     }
