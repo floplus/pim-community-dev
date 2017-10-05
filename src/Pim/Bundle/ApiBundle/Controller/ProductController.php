@@ -282,10 +282,10 @@ class ProductController
         $data = $this->getDecodedContent($request->getContent());
 
         $data = $this->populateIdentifierProductValue($data);
-        $data = $this->productAttributeFilter->filter($data);
         $data = $this->orderData($data);
 
         if (isset($data['parent'])) {
+            $data = $this->productAttributeFilter->filter($data);
             $product = $this->variantProductBuilder->createProduct($data['identifier']);
         } else {
             $product = $this->productBuilder->createProduct();
