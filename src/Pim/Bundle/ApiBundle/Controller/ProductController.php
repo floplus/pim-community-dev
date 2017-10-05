@@ -466,7 +466,7 @@ class ProductController
      * Get a response with a location header to the created or updated resource.
      *
      * @param ProductInterface $product
-     * @param int           $status
+     * @param int              $status
      *
      * @return Response
      */
