@@ -3,13 +3,16 @@
 namespace Pim\Component\Api\tests\integration\Normalizer;
 
 use Akeneo\Test\Integration\Configuration;
-use Akeneo\Test\IntegrationTestsBundle\Sanitizer\MediaSanitizer;
+use Akeneo\Test\Integration\DateSanitizer;
+use Akeneo\Test\Integration\MediaSanitizer;
 use Akeneo\Test\Integration\TestCase;
 use Pim\Component\Catalog\Model\ProductInterface;
 use Pim\Component\Catalog\tests\integration\Normalizer\NormalizedProductCleaner;
 
 /**
  * Integration tests to verify data from database are well formatted in the external api format
+ *
+ * @group ce
  */
 class ProductNormalizerIntegration extends TestCase
 {
@@ -18,7 +21,7 @@ class ProductNormalizerIntegration extends TestCase
      */
     protected function getConfiguration()
     {
-        return $this->catalog->useTechnicalSqlCatalog();
+        return new Configuration([Configuration::getTechnicalSqlCatalogPath()]);
     }
 
     public function testEmptyDisabledProduct()
@@ -28,6 +31,7 @@ class ProductNormalizerIntegration extends TestCase
             'family'        => null,
             'parent'        => null,
             'groups'        => [],
+            'variant_group' => null,
             'categories'    => [],
             'enabled'       => false,
             'values'        => new \StdClass(),
@@ -46,6 +50,7 @@ class ProductNormalizerIntegration extends TestCase
             'family'        => null,
             'parent'        => null,
             'groups'        => [],
+            'variant_group' => null,
             'categories'    => [],
             'enabled'       => true,
             'values'        => new \StdClass(),
@@ -64,6 +69,7 @@ class ProductNormalizerIntegration extends TestCase
             'family'        => 'familyA',
             'parent'        => null,
             'groups'        => ['groupA', 'groupB'],
+            'variant_group' => null,
             'categories'    => ['categoryA1', 'categoryB'],
             'enabled'       => true,
             'values'        => [
@@ -267,6 +273,7 @@ class ProductNormalizerIntegration extends TestCase
             'family'        => 'familyA',
             'parent'        => null,
             'groups'        => ['groupA', 'groupB'],
+            'variant_group' => null,
             'categories'    => ['categoryA1', 'categoryB'],
             'enabled'       => true,
             'values'        => [
