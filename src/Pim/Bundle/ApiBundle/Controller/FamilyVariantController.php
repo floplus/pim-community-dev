@@ -291,7 +291,6 @@ class FamilyVariantController
         }
     }
 
-
     /**
      * Get the JSON decoded content. If the content is not a valid JSON, it throws an error 400.
      *

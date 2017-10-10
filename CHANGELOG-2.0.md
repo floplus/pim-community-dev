@@ -5,6 +5,7 @@
 - TIP-808: Add version strategy for js and css assets
 - PRE_SAVE and POST_SAVE events dispatched by instances of BaseSaver now include an "is_new" argument indicating if entities are being inserted or updated.
 - API-395: Get list of product models via API
+- API-381: Create family variant via API
 
 ## Bug Fixes
 
