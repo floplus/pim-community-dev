@@ -33,7 +33,7 @@ class CreateFamilyVariantIntegration extends TestCase
                 [
                     'axes' => ['size'],
                     'attributes' => ['sku', 'price'],
-                    'level'=> 1,
+                    'level'=> 2,
                 ]
             ],
         ]);
@@ -266,6 +266,39 @@ class CreateFamilyVariantIntegration extends TestCase
         $this->assertSame('code', $violations->get(0)->getPropertyPath());
     }
 
+    public function testFamilyVariantTooLongCode()
+    {
+        $familyVariant = $this->get('pim_catalog.factory.family_variant')->create();
+        $this->get('pim_catalog.updater.family_variant')->update(
+            $familyVariant,
+            [
+                'code'   => 'A_SQL_query_goes_into_a_bar_walks_up_to_two_tables_and_asks__Can_I_join_you___hip_hip_Array_for_the_joke_in_integration_tests',
+                'family' => 'boots',
+                'labels' => [
+                    'en_US' => 'My family variant'
+                ],
+                'variant_attribute_sets' => [
+                    [
+                        'axes' => ['color'],
+                        'attributes' => ['weather_conditions', 'rating', 'side_view', 'top_view', 'lace_color'],
+                        'level'=> 1,
+                    ],
+                    [
+                        'axes' => ['size'],
+                        'attributes' => ['sku', 'price'],
+                        'level'=> 2,
+                    ]
+                ],
+            ]
+        );
+
+        $violations = $this->get('validator')->validate($familyVariant);
+
+        $this->assertCount(1, $violations);
+        $this->assertSame('code', $violations->get(0)->getPropertyPath());
+        $this->assertSame('This value is too long. It should have 100 characters or less.', $violations->get(0)->getMessage());
+    }
+
     /**
      * @expectedException \Akeneo\Component\StorageUtils\Exception\InvalidPropertyException
      * @expectedExceptionMessage Property "family" expects a valid family code. The family does not exist, "unknown_family" given
@@ -367,7 +400,7 @@ class CreateFamilyVariantIntegration extends TestCase
     }
 
     /**
-     * TODO
+     * Validation: If level of attribute set is not specified it is not set, so validation must return an error.
      */
     public function testTheAttributeSetWithoutLevelSpecified()
     {
@@ -376,7 +409,7 @@ class CreateFamilyVariantIntegration extends TestCase
         $familyVariant = $this->get('pim_catalog.factory.family_variant')->create();
 
         $this->get('pim_catalog.updater.family_variant')->update($familyVariant, [
-            'code'                   => 'invalid_axis',
+            'code'                   => 'a_family_variant',
             'family'                 => 'boots',
             'labels'                 => [
                 'en_US' => 'My family variant'
@@ -384,16 +417,18 @@ class CreateFamilyVariantIntegration extends TestCase
             'variant_attribute_sets' => [
                 [
                     'axes'       => ['color'],
-                    'attributes' => ['weather_conditions', 'rating', 'side_view', 'top_view', 'lace_color'],
-                    'level'      => 1,
-                ],
-                [
-                    'axes'       => ['size', 'color'],
-                    'attributes' => ['sku', 'price'],
-                    'level'      => 2,
+                    'attributes' => ['weather_conditions', 'rating', 'side_view', 'top_view', 'lace_color']
                 ]
             ],
         ]);
+
+        $this->assertSame(0, $familyVariant->getVariantAttributeSets()->count());
+
+        $violations = $this->get('validator')->validate($familyVariant);
+
+        $this->assertCount(1, $violations);
+        $this->assertSame('There should be at least one level defined in the family variant', $violations->get(0)->getMessage());
+        $this->assertSame('variant_attribute_sets', $violations->get(0)->getPropertyPath());
     }
 
     /**
@@ -452,11 +487,11 @@ class CreateFamilyVariantIntegration extends TestCase
                 'en_US' => 'My family variant'
             ],
             'variant_attribute_sets' => [
-                //[
-                //    'axes' => ['color'],
-                //    'attributes' => ['weather_conditions', 'rating', 'side_view', 'top_view', 'lace_color', 'price'],
-                //    'level'=> 1,
-                //],
+                [
+                    'axes' => ['color'],
+                    'attributes' => ['weather_conditions', 'rating', 'side_view', 'top_view', 'lace_color'],
+                    'level'=> 1,
+                ],
                 [
                     'axes' => ['size'],
                     'attributes' => ['sku', 'rating', 'price'],
@@ -911,6 +946,60 @@ class CreateFamilyVariantIntegration extends TestCase
                 ]
             ],
         ]);
+    }
+
+    /**
+     * Validation: The attribute set attributes must exists
+     *
+     * @expectedException \Akeneo\Component\StorageUtils\Exception\InvalidPropertyException
+     * @expectedExceptionMessage Property "attribute_set_1" expects a valid attribute code. The attribute does not exist, "weather" given.
+     */
+    public function testAxeAttributesExist()
+    {
+        $familyVariant = $this->get('pim_catalog.factory.family_variant')->create();
+
+        $this->get('pim_catalog.updater.family_variant')->update($familyVariant, [
+            'code' => 'family_variant',
+            'family' => 'boots',
+            'labels' => [
+                'en_US' => 'My family variant'
+            ],
+            'variant_attribute_sets' => [
+                [
+                    'axes' => ['weather'],
+                    'attributes' => ['rating', 'side_view', 'top_view', 'lace_color'],
+                    'level'=> 1,
+                ],
+                [
+                    'axes' => ['size'],
+                    'attributes' => ['sku', 'price'],
+                    'level'=> 2,
+                ]
+            ],
+        ]);
+    }
+
+    public function testLabelHasExistingLocale()
+    {
+        $familyVariant = $this->get('pim_catalog.factory.family_variant')->create();
+
+        $this->get('pim_catalog.updater.family_variant')->update($familyVariant, [
+            'code' => 'family_variant',
+            'family' => 'boots',
+            'labels' => [
+                'klingon' => 'qorDu\''
+            ],
+            'variant_attribute_sets' => [
+                [
+                    'axes' => ['color'],
+                    'attributes' => ['weather_conditions', 'rating', 'side_view', 'top_view', 'lace_color'],
+                    'level' => 1,
+                ]
+            ],
+        ]);
+        $errors = $this->get('validator')->validate($familyVariant);
+
+        $this->assertSame('The locale "klingon" does not exist.', $errors->get(0)->getMessage());
     }
 
     /**
